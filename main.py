@@ -283,65 +283,126 @@ Requirements:
 
 The post should be unique and different from typical AI news posts. Make it sound like a real person sharing insights about AI technology and its business impact."""
 
-        # For now, we'll use a dynamic template-based approach
-        # Future enhancement: Integrate with OpenAI API for truly unique posts
-        # Example: response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": ai_prompt}])
-        import random
-        
-        # Create dynamic storytelling approaches
-        intros = [
-            "When I look at the latest developments in AI technology, I see incredible opportunities for businesses to transform their operations.",
-            "The pace of AI innovation continues to amaze me, and this latest development is a perfect example of how technology is solving real business challenges.",
-            "Every day, I see businesses struggling with inefficient processes that hold back their potential. That's why developments like this in AI technology are so important.",
-            "Another fascinating development in the AI space caught my attention today.",
-            "I'm constantly amazed by how AI technology continues to evolve and solve real-world problems.",
-            "Today's AI developments continue to show the incredible potential of intelligent automation.",
-            "The AI landscape is evolving rapidly, and this latest development caught my attention for good reason.",
-            "I'm always excited to see how AI technology continues to push boundaries and create new possibilities.",
-            "This development in AI technology highlights exactly what I love about working with intelligent automation.",
-            "As someone who helps companies implement AI solutions, developments like this always excite me.",
-            "The world of AI continues to surprise us with groundbreaking innovations that solve real business problems.",
-            "What I find most compelling about this AI development is how it demonstrates practical business applications."
-        ]
-        
-        insights = [
-            "This development highlights how artificial intelligence is reshaping industries and creating new possibilities for growth and efficiency. As someone who works with AI solutions, I find these breakthroughs particularly exciting because they demonstrate the real-world impact of intelligent automation.",
-            "What I find most valuable about developments like this is how they demonstrate the practical applications of AI beyond just hype. These are real solutions that can help businesses streamline operations, reduce costs, and improve efficiency.",
-            "This development represents another step forward in making AI more accessible and practical for businesses of all sizes. What I find most compelling is how these technologies are moving beyond theoretical applications to deliver tangible business value.",
-            "This breakthrough highlights what I love about working with AI solutions - the ability to transform complex challenges into streamlined, efficient processes. It's remarkable how these technologies can turn what once seemed impossible into practical, implementable solutions.",
-            "What I appreciate most about innovations like this is how they demonstrate the real-world impact of intelligent automation. Too often, AI is seen as something only available to large tech companies, but developments like this show how accessible and valuable these technologies are becoming.",
-            "As someone who works with companies to implement AI solutions, I see the growing demand for intelligent automation that can drive real results. Developments like this show why more organizations are turning to AI to gain competitive advantages."
-        ]
-        
-        business_value = [
-            "What strikes me most is how this technology can help businesses eliminate manual processes, accelerate workflows, and free teams to focus on what truly matters - innovation and strategic growth.",
-            "The key to successful AI implementation is understanding how these technologies can be applied strategically to address specific business challenges and drive measurable results.",
-            "I work with organizations to identify where AI can make the biggest difference, and stories like this reinforce why the investment in intelligent automation is becoming essential for competitive businesses.",
-            "The beauty of AI is that it can be tailored to address specific business challenges, whether that's automating repetitive tasks, improving decision-making, or creating new opportunities for growth.",
-            "As someone who helps companies implement AI solutions, I see the transformative potential in stories like this. The key is understanding how to apply these technologies strategically to achieve measurable business outcomes.",
-            "What I find most compelling is how AI is becoming an essential tool for businesses looking to stay ahead in today's competitive landscape. The companies that embrace these technologies early will have a significant advantage."
-        ]
-        
-        questions = [
-            "What are your thoughts on this development? How do you see AI transforming your industry?",
-            "How do you think this technology will impact your business? What opportunities do you see for AI in your industry?",
-            "How do you see AI helping your business overcome current challenges? What processes could benefit from intelligent automation?",
-            "What aspects of this development do you find most interesting? How could similar technologies benefit your business?",
-            "How do you see this technology evolving? What opportunities does it create for your industry?",
-            "What do you think about this development? How could similar technologies benefit your organization?",
-            "How do you think this technology will evolve? What opportunities does it create for your business?",
-            "What challenges could AI help you solve in your organization?",
-            "How do you think this development could benefit your organization? What challenges could AI help you solve?"
-        ]
-        
-        # Randomly select components to create unique posts
-        intro = random.choice(intros)
-        insight = random.choice(insights)
-        value = random.choice(business_value)
-        question = random.choice(questions)
-        
-        # Create the post
-        post_content = f"""{intro}
+        # Use real AI to generate unique posts
+        try:
+            import openai
+            
+            # Get OpenAI API key from environment
+            openai_api_key = os.getenv('OPENAI_API_KEY')
+            if not openai_api_key:
+                logger.warning("OpenAI API key not found, using fallback template system")
+                raise Exception("No OpenAI API key")
+            
+            # Configure OpenAI client
+            client = openai.OpenAI(api_key=openai_api_key)
+            
+            # Create AI prompt for dynamic post generation
+            ai_prompt = f"""Create a unique, engaging LinkedIn post about this AI technology news. 
+
+News Title: {title}
+News Description: {clean_description}
+Source: {source}
+
+Requirements:
+- Write in first person as a business professional who helps companies implement AI solutions
+- Use a conversational, storytelling tone
+- Focus on business value and practical applications
+- Include 2-3 paragraphs of thoughtful commentary
+- End with an engaging question for the audience
+- Include the URL and relevant hashtags
+- Make it sound natural and personal, not automated
+- Vary the writing style and approach
+- Keep it professional but conversational
+- Focus on how AI can help businesses solve real problems
+- Maximum 300 words total
+
+The post should be unique and different from typical AI news posts. Make it sound like a real person sharing insights about AI technology and its business impact.
+
+Format the response as a complete LinkedIn post ready to publish."""
+
+            # Generate post using AI
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "user", "content": ai_prompt}
+                ],
+                max_tokens=500,
+                temperature=0.8  # Add creativity while keeping it professional
+            )
+            
+            # Extract the generated post
+            post_content = response.choices[0].message.content.strip()
+            
+            # Ensure the post includes the URL and hashtags
+            if url not in post_content:
+                post_content += f"\n\nRead more: {url}"
+            
+            if "#AI" not in post_content:
+                post_content += "\n\n#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #BusinessGrowth"
+            
+            logger.info("Successfully generated post using AI")
+            return post_content
+            
+        except Exception as e:
+            logger.warning(f"AI generation failed: {e}, using fallback template system")
+            
+            # Fallback to template system if AI fails
+            import random
+            
+            # Create dynamic storytelling approaches
+            intros = [
+                "When I look at the latest developments in AI technology, I see incredible opportunities for businesses to transform their operations.",
+                "The pace of AI innovation continues to amaze me, and this latest development is a perfect example of how technology is solving real business challenges.",
+                "Every day, I see businesses struggling with inefficient processes that hold back their potential. That's why developments like this in AI technology are so important.",
+                "Another fascinating development in the AI space caught my attention today.",
+                "I'm constantly amazed by how AI technology continues to evolve and solve real-world problems.",
+                "Today's AI developments continue to show the incredible potential of intelligent automation.",
+                "The AI landscape is evolving rapidly, and this latest development caught my attention for good reason.",
+                "I'm always excited to see how AI technology continues to push boundaries and create new possibilities.",
+                "This development in AI technology highlights exactly what I love about working with intelligent automation.",
+                "As someone who helps companies implement AI solutions, developments like this always excite me.",
+                "The world of AI continues to surprise us with groundbreaking innovations that solve real business problems.",
+                "What I find most compelling about this AI development is how it demonstrates practical business applications."
+            ]
+            
+            insights = [
+                "This development highlights how artificial intelligence is reshaping industries and creating new possibilities for growth and efficiency. As someone who works with AI solutions, I find these breakthroughs particularly exciting because they demonstrate the real-world impact of intelligent automation.",
+                "What I find most valuable about developments like this is how they demonstrate the practical applications of AI beyond just hype. These are real solutions that can help businesses streamline operations, reduce costs, and improve efficiency.",
+                "This development represents another step forward in making AI more accessible and practical for businesses of all sizes. What I find most compelling is how these technologies are moving beyond theoretical applications to deliver tangible business value.",
+                "This breakthrough highlights what I love about working with AI solutions - the ability to transform complex challenges into streamlined, efficient processes. It's remarkable how these technologies can turn what once seemed impossible into practical, implementable solutions.",
+                "What I appreciate most about innovations like this is how they demonstrate the real-world impact of intelligent automation. Too often, AI is seen as something only available to large tech companies, but developments like this show how accessible and valuable these technologies are becoming.",
+                "As someone who works with companies to implement AI solutions, I see the growing demand for intelligent automation that can drive real results. Developments like this show why more organizations are turning to AI to gain competitive advantages."
+            ]
+            
+            business_value = [
+                "What strikes me most is how this technology can help businesses eliminate manual processes, accelerate workflows, and free teams to focus on what truly matters - innovation and strategic growth.",
+                "The key to successful AI implementation is understanding how these technologies can be applied strategically to address specific business challenges and drive measurable results.",
+                "I work with organizations to identify where AI can make the biggest difference, and stories like this reinforce why the investment in intelligent automation is becoming essential for competitive businesses.",
+                "The beauty of AI is that it can be tailored to address specific business challenges, whether that's automating repetitive tasks, improving decision-making, or creating new opportunities for growth.",
+                "As someone who helps companies implement AI solutions, I see the transformative potential in stories like this. The key is understanding how to apply these technologies strategically to achieve measurable business outcomes.",
+                "What I find most compelling is how AI is becoming an essential tool for businesses looking to stay ahead in today's competitive landscape. The companies that embrace these technologies early will have a significant advantage."
+            ]
+            
+            questions = [
+                "What are your thoughts on this development? How do you see AI transforming your industry?",
+                "How do you think this technology will impact your business? What opportunities do you see for AI in your industry?",
+                "How do you see AI helping your business overcome current challenges? What processes could benefit from intelligent automation?",
+                "What aspects of this development do you find most interesting? How could similar technologies benefit your business?",
+                "How do you see this technology evolving? What opportunities does it create for your industry?",
+                "What do you think about this development? How could similar technologies benefit your organization?",
+                "How do you think this technology will evolve? What opportunities does it create for your business?",
+                "What challenges could AI help you solve in your organization?",
+                "How do you think this development could benefit your organization? What challenges could AI help you solve?"
+            ]
+            
+            # Randomly select components to create unique posts
+            intro = random.choice(intros)
+            insight = random.choice(insights)
+            value = random.choice(business_value)
+            question = random.choice(questions)
+            
+            # Create the post
+            post_content = f"""{intro}
 
 {clean_description}
 
