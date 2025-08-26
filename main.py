@@ -120,7 +120,10 @@ class AINewsAutomation:
         """Fetch AI news from TechCrunch RSS feed"""
         try:
             url = "https://techcrunch.com/feed/"
-            response = requests.get(url, timeout=10)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
             
             # Simple XML parsing for RSS feed
@@ -157,7 +160,10 @@ class AINewsAutomation:
         """Fetch AI news from VentureBeat RSS feed"""
         try:
             url = "https://venturebeat.com/feed/"
-            response = requests.get(url, timeout=10)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
             
             import xml.etree.ElementTree as ET

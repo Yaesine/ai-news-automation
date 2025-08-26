@@ -41,20 +41,38 @@ class LinkedInPoster:
             chrome_paths = [
                 "/usr/bin/google-chrome",
                 "/usr/bin/chromium-browser",
-                "/opt/hostedtoolcache/setup-chrome/chrome/stable/x64/chrome"
+                "/opt/hostedtoolcache/setup-chrome/chrome/stable/x64/chrome",
+                "/usr/bin/chromium",
+                "/snap/bin/chromium"
             ]
             
+            chrome_found = False
             for chrome_path in chrome_paths:
                 if os.path.exists(chrome_path):
                     chrome_options.binary_location = chrome_path
+                    logger.info(f"Found Chrome at: {chrome_path}")
+                    chrome_found = True
                     break
+            
+            if not chrome_found:
+                logger.warning("Chrome not found in standard paths, trying default")
             
             self.driver = webdriver.Chrome(options=chrome_options)
             self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
             return True
         except Exception as e:
             logger.error(f"Error setting up Chrome driver: {e}")
-            return False
+            # Try to install Chrome if not found
+            try:
+                logger.info("Attempting to install Chrome...")
+                import subprocess
+                subprocess.run(["sudo", "apt-get", "update"], check=True)
+                subprocess.run(["sudo", "apt-get", "install", "-y", "google-chrome-stable"], check=True)
+                logger.info("Chrome installed successfully")
+                return True
+            except Exception as install_error:
+                logger.error(f"Failed to install Chrome: {install_error}")
+                return False
     
     def login_to_linkedin(self):
         """Login to LinkedIn"""
