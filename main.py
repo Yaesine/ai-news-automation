@@ -283,12 +283,18 @@ Requirements:
 
 The post should be unique and different from typical AI news posts. Make it sound like a real person sharing insights about AI technology and its business impact."""
 
-        # Use Hugging Face Inference API (free tier) to generate unique posts
+                # Use Cohere AI (free tier) for post generation (works with GitHub Actions)
         try:
-            import requests
+            import cohere
             
-            # Get Hugging Face API token from environment (optional for free tier)
-            hf_token = os.getenv('HUGGINGFACE_TOKEN', '')  # Optional for free tier
+            # Get Cohere API key from environment (free tier available)
+            cohere_api_key = os.getenv('COHERE_API_KEY')
+            if not cohere_api_key:
+                logger.warning("Cohere API key not found, using fallback template system")
+                raise Exception("No Cohere API key")
+            
+            # Configure Cohere client
+            co = cohere.Client(cohere_api_key)
             
             # Create AI prompt for dynamic post generation
             ai_prompt = f"""Create a unique, engaging LinkedIn post about this AI technology news. 
@@ -314,52 +320,34 @@ The post should be unique and different from typical AI news posts. Make it soun
 
 Format the response as a complete LinkedIn post ready to publish."""
 
-            # Use Hugging Face Inference API (free tier)
-            headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
+            # Generate post using Cohere AI
+            response = co.generate(
+                model='command',
+                prompt=ai_prompt,
+                max_tokens=500,
+                temperature=0.8,
+                k=0,
+                stop_sequences=[],
+                return_likelihoods='NONE'
+            )
             
-            # Try different free models
-            models = [
-                "microsoft/DialoGPT-medium",  # Free conversational model
-                "gpt2",  # Free text generation
-                "distilgpt2"  # Smaller, faster free model
-            ]
+            # Extract the generated post
+            post_content = response.generations[0].text.strip()
             
-            for model in models:
-                try:
-                    response = requests.post(
-                        f"https://api-inference.huggingface.co/models/{model}",
-                        headers=headers,
-                        json={"inputs": ai_prompt, "max_length": 300, "temperature": 0.8}
-                    )
-                    
-                    if response.status_code == 200:
-                        result = response.json()
-                        if isinstance(result, list) and len(result) > 0:
-                            generated_text = result[0].get('generated_text', '')
-                            
-                            # Clean up the generated text
-                            post_content = generated_text.replace(ai_prompt, '').strip()
-                            
-                            # Ensure the post includes the URL and hashtags
-                            if url not in post_content:
-                                post_content += f"\n\nRead more: {url}"
-                            
-                            if "#AI" not in post_content:
-                                post_content += "\n\n#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #BusinessGrowth"
-                            
-                            logger.info(f"Successfully generated post using Hugging Face model: {model}")
-                            return post_content
-                            
-                except Exception as e:
-                    logger.warning(f"Failed with model {model}: {e}")
-                    continue
+            # Ensure the post includes the URL and hashtags
+            if url not in post_content:
+                post_content += f"\n\nRead more: {url}"
             
-            raise Exception("All Hugging Face models failed")
+            if "#AI" not in post_content:
+                post_content += "\n\n#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #BusinessGrowth"
+            
+            logger.info("Successfully generated post using Cohere AI")
+            return post_content
             
         except Exception as e:
-            logger.warning(f"Hugging Face AI generation failed: {e}, using fallback template system")
+            logger.warning(f"Cohere AI generation failed: {e}, using fallback template system")
             
-            # Fallback to template system if AI fails
+        # Fallback to template system if AI fails
             import random
             
             # Create dynamic storytelling approaches
