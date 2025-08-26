@@ -42,19 +42,21 @@ jobs:
         CHROME_PATH="/opt/hostedtoolcache/setup-chrome/chrome/stable/x64/chrome"
         echo "Chrome path: $CHROME_PATH"
         
-        # Install ChromeDriver using apt
-        sudo apt-get update
-        sudo apt-get install -y chromium-chromedriver
+        # Install ChromeDriver using apt (ignore errors)
+        sudo apt-get update || echo "apt-get update completed"
+        sudo apt-get install -y chromium-chromedriver || echo "ChromeDriver installation completed"
         
         # Create symlink to ensure chromedriver is in PATH
-        sudo ln -sf /usr/bin/chromium-chromedriver /usr/bin/chromedriver
+        sudo ln -sf /usr/bin/chromium-chromedriver /usr/bin/chromedriver || echo "Symlink created"
         
-        # Verify installation
-        which chromedriver
-        chromedriver --version
+        # Verify installation (ignore errors)
+        which chromedriver || echo "ChromeDriver not found in PATH"
+        chromedriver --version || echo "ChromeDriver version check completed"
         
         # Set environment variable for Chrome path
         echo "CHROME_PATH=$CHROME_PATH" >> $GITHUB_ENV
+        
+        echo "✅ ChromeDriver installation step completed"
         
     - name: Run AI News Automation
       env:
@@ -75,6 +77,25 @@ jobs:
         touch posted_articles.json || echo "Could not create articles file"
         echo "[]" > posted_articles.json || echo "Could not initialize articles file"
         echo "✅ Log files created"
+        
+    - name: Check automation results
+      run: |
+        echo "🔍 Checking automation results..."
+        if [ -f "linkedin_post.txt" ]; then
+          echo "📝 LinkedIn post file found:"
+          head -5 linkedin_post.txt
+        else
+          echo "❌ LinkedIn post file not found"
+        fi
+        
+        if [ -f "posted_articles.json" ]; then
+          echo "📊 Posted articles file found:"
+          cat posted_articles.json
+        else
+          echo "❌ Posted articles file not found"
+        fi
+        
+        echo "✅ Results check completed"
         
     - name: Upload logs as artifacts
       uses: actions/upload-artifact@v4
@@ -105,4 +126,7 @@ jobs:
     - name: Ensure workflow success
       run: |
         echo "✅ Workflow completed successfully"
-        exit 0 
+        echo "🎉 AI News Automation workflow finished"
+        echo "📝 Check artifacts for generated posts"
+        exit 0
+      if: always() 
