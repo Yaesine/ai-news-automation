@@ -283,18 +283,12 @@ Requirements:
 
 The post should be unique and different from typical AI news posts. Make it sound like a real person sharing insights about AI technology and its business impact."""
 
-        # Use real AI to generate unique posts
+        # Use Hugging Face Inference API (free tier) to generate unique posts
         try:
-            import openai
+            import requests
             
-            # Get OpenAI API key from environment
-            openai_api_key = os.getenv('OPENAI_API_KEY')
-            if not openai_api_key:
-                logger.warning("OpenAI API key not found, using fallback template system")
-                raise Exception("No OpenAI API key")
-            
-            # Configure OpenAI client
-            client = openai.OpenAI(api_key=openai_api_key)
+            # Get Hugging Face API token from environment (optional for free tier)
+            hf_token = os.getenv('HUGGINGFACE_TOKEN', '')  # Optional for free tier
             
             # Create AI prompt for dynamic post generation
             ai_prompt = f"""Create a unique, engaging LinkedIn post about this AI technology news. 
@@ -320,31 +314,50 @@ The post should be unique and different from typical AI news posts. Make it soun
 
 Format the response as a complete LinkedIn post ready to publish."""
 
-            # Generate post using AI
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "user", "content": ai_prompt}
-                ],
-                max_tokens=500,
-                temperature=0.8  # Add creativity while keeping it professional
-            )
+            # Use Hugging Face Inference API (free tier)
+            headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
             
-            # Extract the generated post
-            post_content = response.choices[0].message.content.strip()
+            # Try different free models
+            models = [
+                "microsoft/DialoGPT-medium",  # Free conversational model
+                "gpt2",  # Free text generation
+                "distilgpt2"  # Smaller, faster free model
+            ]
             
-            # Ensure the post includes the URL and hashtags
-            if url not in post_content:
-                post_content += f"\n\nRead more: {url}"
+            for model in models:
+                try:
+                    response = requests.post(
+                        f"https://api-inference.huggingface.co/models/{model}",
+                        headers=headers,
+                        json={"inputs": ai_prompt, "max_length": 300, "temperature": 0.8}
+                    )
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if isinstance(result, list) and len(result) > 0:
+                            generated_text = result[0].get('generated_text', '')
+                            
+                            # Clean up the generated text
+                            post_content = generated_text.replace(ai_prompt, '').strip()
+                            
+                            # Ensure the post includes the URL and hashtags
+                            if url not in post_content:
+                                post_content += f"\n\nRead more: {url}"
+                            
+                            if "#AI" not in post_content:
+                                post_content += "\n\n#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #BusinessGrowth"
+                            
+                            logger.info(f"Successfully generated post using Hugging Face model: {model}")
+                            return post_content
+                            
+                except Exception as e:
+                    logger.warning(f"Failed with model {model}: {e}")
+                    continue
             
-            if "#AI" not in post_content:
-                post_content += "\n\n#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #BusinessGrowth"
-            
-            logger.info("Successfully generated post using AI")
-            return post_content
+            raise Exception("All Hugging Face models failed")
             
         except Exception as e:
-            logger.warning(f"AI generation failed: {e}, using fallback template system")
+            logger.warning(f"Hugging Face AI generation failed: {e}, using fallback template system")
             
             # Fallback to template system if AI fails
             import random

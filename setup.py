@@ -26,7 +26,7 @@ def create_env_file():
     linkedin_email = input("\nLinkedIn Email: ").strip()
     linkedin_password = input("LinkedIn Password: ").strip()
     news_api_key = input("NewsAPI Key (optional - press Enter to use demo): ").strip()
-    openai_api_key = input("OpenAI API Key (for AI post generation): ").strip()
+    hf_token = input("Hugging Face Token (optional - press Enter for free tier): ").strip()
     
     # Create .env content
     env_content = []
@@ -40,8 +40,8 @@ def create_env_file():
     if news_api_key:
         env_content.append(f"NEWS_API_KEY={news_api_key}")
     
-    if openai_api_key:
-        env_content.append(f"OPENAI_API_KEY={openai_api_key}")
+    if hf_token:
+        env_content.append(f"HUGGINGFACE_TOKEN={hf_token}")
     
     # Write .env file
     try:
