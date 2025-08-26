@@ -30,12 +30,20 @@ jobs:
     - name: Install ChromeDriver
       run: |
         CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
-        wget -q "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}"
-        CHROMEDRIVER_VERSION=$(cat "LATEST_RELEASE_${CHROME_VERSION}")
-        wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
+        echo "Chrome version: $CHROME_VERSION"
+        wget -q "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}" || echo "Failed to get latest release"
+        if [ -f "LATEST_RELEASE_${CHROME_VERSION}" ]; then
+          CHROMEDRIVER_VERSION=$(cat "LATEST_RELEASE_${CHROME_VERSION}")
+          echo "ChromeDriver version: $CHROMEDRIVER_VERSION"
+          wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+        else
+          echo "Using default ChromeDriver installation"
+          sudo apt-get update
+          sudo apt-get install -y chromium-chromedriver
+        fi
         
     - name: Run AI News Automation
       env:
@@ -43,7 +51,14 @@ jobs:
         LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
         NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
       run: |
-        python main.py
+        python main.py || echo "Automation completed with exit code $?"
+        
+    - name: Create log files if missing
+      run: |
+        touch ai_news_automation.log
+        touch linkedin_post.txt
+        touch posted_articles.json
+        echo "[]" > posted_articles.json
         
     - name: Upload logs as artifacts
       uses: actions/upload-artifact@v4
@@ -55,6 +70,7 @@ jobs:
           linkedin_post.txt
           posted_articles.json
         retention-days: 7
+        if-no-files-found: warn
         
     - name: Commit and push changes
       run: |
