@@ -76,7 +76,16 @@ class LinkedInPoster:
                 subprocess.run(["sudo", "apt-get", "update"], check=True)
                 subprocess.run(["sudo", "apt-get", "install", "-y", "google-chrome-stable"], check=True)
                 logger.info("Chrome installed successfully")
-                return True
+                
+                # Try to create driver again after installation
+                try:
+                    self.driver = webdriver.Chrome(options=chrome_options)
+                    self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+                    return True
+                except Exception as driver_error:
+                    logger.error(f"Failed to create driver after Chrome installation: {driver_error}")
+                    return False
+                    
             except Exception as install_error:
                 logger.error(f"Failed to install Chrome: {install_error}")
                 return False
@@ -84,6 +93,10 @@ class LinkedInPoster:
     def login_to_linkedin(self):
         """Login to LinkedIn with improved error handling"""
         try:
+            if not self.driver:
+                logger.error("Driver not initialized")
+                return False
+                
             print("🌐 Navigating to LinkedIn login page...")
             self.driver.get("https://www.linkedin.com/login")
             
