@@ -254,21 +254,65 @@ class AINewsAutomation:
         # Clean up description (remove HTML tags if present)
         import re
         clean_description = re.sub(r'<[^>]+>', '', description)
-        clean_description = clean_description[:200] + '...' if len(clean_description) > 200 else clean_description
+        clean_description = clean_description[:250] + '...' if len(clean_description) > 250 else clean_description
         
-        # Create engaging post content
-        post_content = f"""🤖 AI Technology Update: {title}
+        # Create different storytelling styles
+        import random
+        story_templates = [
+            f"""AI Technology Update: {title}
 
 {clean_description}
 
-🔗 Read more: {url}
+This development represents another milestone in the AI revolution. As we witness these technological breakthroughs, it's remarkable to see how artificial intelligence continues to transform our world in unexpected ways.
+
+The pace of innovation in AI is accelerating, and stories like this remind us of the profound impact these technologies will have on our future.
+
+What are your thoughts on this development? How do you see this technology shaping the industry?
+
+Read more: {url}
 
 #AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #TechNews
 
-What are your thoughts on this development? Share your insights below! 👇
+---
+Source: {source} | Posted via AI News Automation""",
+
+            f"""AI Technology Update: {title}
+
+{clean_description}
+
+In the ever-evolving landscape of artificial intelligence, developments like this showcase the incredible potential of AI to solve real-world challenges. As technology continues to advance, we're seeing AI applications that were once science fiction become reality.
+
+This story highlights the growing intersection between AI and various industries, demonstrating how these technologies are reshaping the way we work and live.
+
+What are your thoughts on this development? How do you think this will impact the industry?
+
+Read more: {url}
+
+#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #TechNews
 
 ---
-Source: {source} | Posted via AI News Automation 🤖"""
+Source: {source} | Posted via AI News Automation""",
+
+            f"""AI Technology Update: {title}
+
+{clean_description}
+
+The world of artificial intelligence continues to surprise us with groundbreaking developments. This story illustrates how AI is becoming an integral part of our technological landscape, driving innovation across multiple sectors.
+
+As we move forward, it's fascinating to observe how these technologies evolve and create new opportunities for growth and advancement.
+
+What are your thoughts on this development? How do you see this technology progressing?
+
+Read more: {url}
+
+#AI #ArtificialIntelligence #Technology #Innovation #MachineLearning #TechNews
+
+---
+Source: {source} | Posted via AI News Automation"""
+        ]
+        
+        # Select a random storytelling style
+        post_content = random.choice(story_templates)
         
         return post_content
     
