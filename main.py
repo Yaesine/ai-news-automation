@@ -428,8 +428,8 @@ Read more: {url}
             
             # Try to use Selenium for automated posting
             try:
-                from linkedin_poster import post_to_linkedin_selenium
-                success = post_to_linkedin_selenium(self.linkedin_email, self.linkedin_password, post_content)
+                from linkedin_api_poster import post_to_linkedin
+                success = post_to_linkedin(self.linkedin_email, self.linkedin_password, post_content)
                 if success:
                     logger.info("Successfully posted to LinkedIn using Selenium")
                     return True

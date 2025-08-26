@@ -33,12 +33,19 @@ class LinkedInPoster:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
-        # Uncomment the line below if you want to run headless (no browser window)
+        # Run with browser window visible for better LinkedIn compatibility
         # chrome_options.add_argument("--headless")
         
+        # Add more options to avoid detection
+        chrome_options.add_argument("--disable-web-security")
+        chrome_options.add_argument("--allow-running-insecure-content")
+        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+        chrome_options.add_argument("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36")
+        
         try:
-            # Try different Chrome paths for GitHub Actions
+            # Try different Chrome paths for GitHub Actions and macOS
             chrome_paths = [
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",  # macOS
                 "/usr/bin/google-chrome",
                 "/usr/bin/chromium-browser",
                 "/opt/hostedtoolcache/setup-chrome/chrome/stable/x64/chrome",
@@ -75,29 +82,42 @@ class LinkedInPoster:
                 return False
     
     def login_to_linkedin(self):
-        """Login to LinkedIn"""
+        """Login to LinkedIn with improved error handling"""
         try:
+            print("🌐 Navigating to LinkedIn login page...")
             self.driver.get("https://www.linkedin.com/login")
             
-            # Wait for page to load
-            WebDriverWait(self.driver, 10).until(
+            # Wait for page to load with longer timeout
+            print("⏳ Waiting for login form to load...")
+            WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.ID, "username"))
             )
             
+            # Add delay to simulate human behavior
+            time.sleep(2)
+            
             # Enter email
+            print("📧 Entering email...")
             email_field = self.driver.find_element(By.ID, "username")
+            email_field.clear()
             email_field.send_keys(self.email)
+            time.sleep(1)
             
             # Enter password
+            print("🔒 Entering password...")
             password_field = self.driver.find_element(By.ID, "password")
+            password_field.clear()
             password_field.send_keys(self.password)
+            time.sleep(1)
             
             # Click sign in button
+            print("🔘 Clicking sign in button...")
             sign_in_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
             sign_in_button.click()
             
-            # Wait for login to complete
-            WebDriverWait(self.driver, 15).until(
+            # Wait for login to complete with longer timeout
+            print("⏳ Waiting for login to complete...")
+            WebDriverWait(self.driver, 30).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-test-id='nav-home']"))
             )
             
