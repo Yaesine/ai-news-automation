@@ -76,6 +76,6 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add posted_articles.json
-        git commit -m "Update posted articles - $(date)" || exit 0
-        git push 
+        git add posted_articles.json || echo "No changes to commit"
+        git commit -m "Update posted articles - $(date)" || echo "No changes to commit"
+        git push || echo "No changes to push" 

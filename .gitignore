@@ -33,7 +33,6 @@ ai_news_automation.log
 # Generated files
 linkedin_post.txt
 test_post.txt
-posted_articles.json
 
 # IDE
 .vscode/
