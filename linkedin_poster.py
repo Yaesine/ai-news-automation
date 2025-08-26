@@ -37,6 +37,18 @@ class LinkedInPoster:
         # chrome_options.add_argument("--headless")
         
         try:
+            # Try different Chrome paths for GitHub Actions
+            chrome_paths = [
+                "/usr/bin/google-chrome",
+                "/usr/bin/chromium-browser",
+                "/opt/hostedtoolcache/setup-chrome/chrome/stable/x64/chrome"
+            ]
+            
+            for chrome_path in chrome_paths:
+                if os.path.exists(chrome_path):
+                    chrome_options.binary_location = chrome_path
+                    break
+            
             self.driver = webdriver.Chrome(options=chrome_options)
             self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
             return True
